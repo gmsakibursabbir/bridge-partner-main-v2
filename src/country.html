@@ -1946,10 +1946,9 @@
       document.addEventListener("DOMContentLoaded", function () {
         const links = document.querySelectorAll('a[href^="#"]:not([href="#"])');
 
-        const duration = 1200; // 💬 Slower = smoother (1000ms -> 1200ms)
-        const offset = 100; // Your offset for sticky nav etc.
+        const duration = 1200; // Duration of the scroll animation
+        const offset = 100; // Offset for sticky navigation
 
-        // ✨ Better easing function (cubic bezier feeling)
         function easeInOutQuint(t) {
           return t < 0.5
             ? 16 * t * t * t * t * t
@@ -1958,43 +1957,36 @@
 
         links.forEach((link) => {
           link.addEventListener("click", function (e) {
-            e.preventDefault();
-
             const targetId = this.getAttribute("href").substring(1);
             const target = document.getElementById(targetId);
-            if (!target) return;
 
-            isScrollingEnabled = false; // 🛑 Pause custom scroll
+            // Prevent default only if the target exists
+            if (target) {
+              e.preventDefault();
 
-            const targetPosition =
-              target.getBoundingClientRect().top + window.scrollY - offset;
-            const startPosition = window.scrollY;
-            const distance = targetPosition - startPosition;
-            let startTime = null;
+              const targetPosition =
+                target.getBoundingClientRect().top + window.scrollY - offset;
+              const startPosition = window.scrollY;
+              const distance = targetPosition - startPosition;
+              let startTime = null;
 
-            function animation(currentTime) {
-              if (startTime === null) startTime = currentTime;
-              const timeElapsed = currentTime - startTime;
-              const progress = Math.min(timeElapsed / duration, 1); // 0 -> 1
+              function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
 
-              window.scrollTo(
-                0,
-                startPosition + distance * easeInOutQuint(progress)
-              );
+                window.scrollTo(
+                  0,
+                  startPosition + distance * easeInOutQuint(progress)
+                );
 
-              if (timeElapsed < duration) {
-                requestAnimationFrame(animation);
-              } else {
-                // ✨ Finish exact position
-                window.scrollTo(0, targetPosition);
-                currentScroll = targetPosition; // ✅ Sync
-                targetScroll = targetPosition; // ✅ Sync
-                link.blur();
-                isScrollingEnabled = true; // ✅ Resume custom scroll
+                if (timeElapsed < duration) {
+                  requestAnimationFrame(animation);
+                }
               }
-            }
 
-            requestAnimationFrame(animation);
+              requestAnimationFrame(animation);
+            }
           });
         });
       });

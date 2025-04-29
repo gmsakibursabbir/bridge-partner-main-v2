@@ -136,48 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
 //scroll triger
 gsap.registerPlugin(ScrollTrigger);
 
-// Timeline for scrolpartnership (titles only)
-const tl = gsap.timeline({
-  scrollTrigger: {
-    trigger: ".scrolpartnership",
-    start: "top top", // Pin when section top hits viewport top
-    end: "+=400%", // Short scroll for 2 titles
-    scrub: true, // Sync animation with scroll
-    pin: true, // Pin the section
-    pinSpacing: true, // Ensure space for pinned section
-    snap: {
-      snapTo: [0, 0.5, 1], // Snap at Title 1, Title 2, and unpin
-      duration: { min: 0.1, max: 0.9 }, // Tight snapping
-      ease: "power1.inOut",
-    },
-  },
-});
 
-// Title animations (fade in/out sequentially)
-tl.to("#title1", { opacity: 1, duration: 0.55 })
-  .to("#title1", { opacity: 0, duration: 0.55 })
-  .to("#title2", { opacity: 1, duration: 0.55 })
-  .to("#title2", { opacity: 0, duration: 0.55 })
-  .to("#title3", { opacity: 1, duration: 0.55 });
-// No collapse; section unpins and scrolls normally
-
-// Separate timeline for textscroller animation (after unpin)
-gsap.fromTo(
-  ".textscroller",
-  { opacity: 0, y: 40, scale: 0.95 }, // Start: invisible, down, slightly scaled
-  {
-    opacity: 1,
-    y: 0,
-    scale: 1, // End: visible, in place, full size
-    duration: 1, // Smooth and deliberate
-    ease: "power3.out", // Soft, natural easing
-    scrollTrigger: {
-      trigger: ".spacer",
-      start: "bottom 85%", // Trigger early for seamless transition
-      toggleActions: "play none none none", // Play once
-    },
-  }
-);
 
 //menu
 document.addEventListener("DOMContentLoaded", () => {
@@ -218,6 +177,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Select all anchor links starting with "#"
+
+
+			
 
 //approch
 function initializeApproachSection(approachSection) {
@@ -549,27 +511,40 @@ var wow = new WOW({
 });
 wow.init();
 
-// Initialize Locomotive Scroll
+// After initializing Lenis
 const lenis = new Lenis({
-  duration: 1.2, // Scroll duration
-  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Easing function for smooth transitions
-  direction: "vertical", // Scroll direction: vertical or horizontal
-  gestureDirection: "vertical", // Gesture direction: vertical, horizontal, or both
-  smooth: true, // Enable smooth scrolling
-  mouseMultiplier: 1, // Mouse scroll speed multiplier
-  smoothTouch: false, // Disable smooth scrolling for touch devices
-  touchMultiplier: 2, // Touch scroll speed multiplier
-  infinite: false, // Disable infinite scroll
+  duration: 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  direction: "vertical",
+  gestureDirection: "vertical",
+  smooth: true,
+  mouseMultiplier: 1,
+  smoothTouch: false,
+  touchMultiplier: 2,
+  infinite: false,
 });
 
-// Optional: Listen to scroll events
-lenis.on("scroll", ({ scroll, limit, velocity, direction, progress }) => {
-  console.log({ scroll, limit, velocity, direction, progress });
+// Sync ScrollTrigger with Lenis
+ScrollTrigger.scrollerProxy(document.body, {
+  scrollTop(value) {
+    if (arguments.length) {
+      lenis.scrollTo(value, { immediate: true });
+    }
+    return lenis.scroll;
+  },
+  getBoundingClientRect() {
+    return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+  },
+  pinType: "transform",
 });
 
-// Animation frame loop function
+// Update ScrollTrigger on Lenis scroll
+lenis.on("scroll", ScrollTrigger.update);
+
+// Animation frame loop
 function raf(time) {
   lenis.raf(time);
+  ScrollTrigger.update();
   requestAnimationFrame(raf);
 }
 requestAnimationFrame(raf);
@@ -791,3 +766,4 @@ window.addEventListener("scroll", changeHeaderStyle);
 window.addEventListener("resize", changeHeaderStyle);
 window.addEventListener("load", changeHeaderStyle);
 // group
+
